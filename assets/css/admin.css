@@ -1,0 +1,33 @@
+/* Groq Blogger Admin Styles */
+.groq-blogger-settings .form-table th {
+    width: 200px;
+}
+
+.groq-blogger-settings input.regular-text,
+.groq-blogger-settings select.regular-text {
+    width: 400px;
+    max-width: 100%;
+}
+
+.wrap h1 {
+    margin-bottom: 20px;
+}
+
+.form-table td p.description {
+    font-style: italic;
+    color: #666;
+}
+
+.notice-success {
+    border-left-color: #46b450;
+}
+
+.notice-error {
+    border-left-color: #dc3232;
+}
+
+#post_title {
+    width: 100%;
+    max-width: 600px;
+    padding: 8px;
+}
