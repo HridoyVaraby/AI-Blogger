@@ -65,13 +65,20 @@ class Settings {
     public function render_api_key_field() {
         $api_key = get_option('groq_blogger_api_key');
         echo '<input type="password" name="groq_blogger_api_key" value="' . esc_attr($api_key) . '" class="regular-text">';
+        echo '<p class="description">' . __('Your Groq API key can be found in the ', 'groq-blogger') 
+            . '<a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">'
+            . __('Groq Cloud Console', 'groq-blogger') 
+            . '</a></p>';
     }
 
     public function render_model_field() {
-        $selected_model = get_option('groq_blogger_model', 'mixtral-8x7b-32768');
+        $selected_model = get_option('groq_blogger_model', 'llama-3.3-70b-versatile');
         $models = array(
+            'llama-3.3-70b-versatile' => 'Llama-3.3-70b-Versatile',
             'mixtral-8x7b-32768' => 'Mixtral-8x7b-32768',
             'llama2-70b-4096' => 'Llama2-70b-4096',
+            'deepseek-r1-distill-llama-70b' => 'Deepseek-R1-Distill-Llama-70b (Experimental)', 
+            'gemma2-9b-it' => 'Gemma2-9b-IT',
         );
         
         echo '<select name="groq_blogger_model" class="regular-text">';

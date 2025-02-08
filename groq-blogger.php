@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Groq Blogger
  * Description: Generate SEO-friendly blog posts using Groq API
- * Version: 1.0.0
+ * Version: 1.0.2
  * Author: Hridoy Varaby | Varabit
  * License: GPL-2.0+
  * Text Domain: groq-blogger

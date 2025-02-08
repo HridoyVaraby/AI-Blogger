@@ -16,6 +16,17 @@
 .form-table td p.description {
     font-style: italic;
     color: #666;
+    margin-top: 0.5em;
+    line-height: 1.4;
+}
+
+.groq-blogger-settings a {
+    text-decoration: none;
+    color: #2271b1;
+}
+
+.groq-blogger-settings a:hover {
+    color: #135e96;
 }
 
 .notice-success {
