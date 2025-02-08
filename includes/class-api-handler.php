@@ -1,5 +1,5 @@
 <?php
-namespace GroqBlogger;
+namespace AI_Blogger;
 
 defined('ABSPATH') || exit;
 
@@ -8,7 +8,7 @@ class API_Handler {
     
     public function generate_content($title, $model, $api_key) {
         if (empty($api_key) || empty($model)) {
-            return new \WP_Error('missing_credentials', __('API credentials not configured', 'groq-blogger'));
+            return new \WP_Error('missing_credentials', __('API credentials not configured', 'ai-blogger'));
         }
 
         $response = wp_remote_post(self::API_ENDPOINT, array(
@@ -42,7 +42,7 @@ class API_Handler {
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
         if ($status_code !== 200) {
-            return new \WP_Error('api_error', __('API Error: ', 'groq-blogger') . ($body['error']['message'] ?? __('Unknown error', 'groq-blogger')));
+            return new \WP_Error('api_error', __('API Error: ', 'ai-blogger') . ($body['error']['message'] ?? __('Unknown error', 'ai-blogger')));
         }
 
         return $this->sanitize_content($body['choices'][0]['message']['content'] ?? '');

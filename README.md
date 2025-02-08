@@ -31,20 +31,20 @@ A powerful AI content generation plugin for WordPress that leverages Groq's ultr
 2. Navigate to WordPress Admin → Plugins → Add New
 3. Click "Upload Plugin" and select the ZIP file
 4. Activate the plugin
-5. Navigate to Settings → Groq Blogger to configure your API key
+5. Navigate to Settings → AI Blogger to configure your API key
 
 ## Configuration
 
 1. Get your Groq API key from [Groq Cloud Console](https://console.groq.com)
 2. In WordPress admin:
-   - Go to Settings → Groq Blogger
+   - Go to Settings → AI Blogger
    - Enter your API key
    - Select default model and content parameters
    - Save changes
 
 ## Available LLM Models
 
-Groq Blogger supports these state-of-the-art models:
+AI Blogger supports these state-of-the-art models:
 
 | Model Name          | Context Window | Best For                  |
 |---------------------|----------------|---------------------------|
@@ -57,13 +57,13 @@ Groq Blogger supports these state-of-the-art models:
 
 1. Create New Post:
    - Navigate to Posts → Add New
-   - Click "Generate with Groq" button
+   - Click "Generate with AI" button
    - Enter topic/keywords
    - Select content parameters
    - Generate and refine content
 
 2. Bulk Generation:
-   - Navigate to Tools → Groq Blogger
+   - Navigate to Tools → AI Blogger
    - Upload CSV with topics/parameters
    - Queue multiple posts for generation
 

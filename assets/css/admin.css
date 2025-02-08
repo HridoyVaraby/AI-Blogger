@@ -1,10 +1,10 @@
-/* Groq Blogger Admin Styles */
-.groq-blogger-settings .form-table th {
+/* AI Blogger Admin Styles */
+.ai-blogger-settings .form-table th {
     width: 200px;
 }
 
-.groq-blogger-settings input.regular-text,
-.groq-blogger-settings select.regular-text {
+.ai-blogger-settings input.regular-text,
+.ai-blogger-settings select.regular-text {
     width: 400px;
     max-width: 100%;
 }
@@ -20,12 +20,12 @@
     line-height: 1.4;
 }
 
-.groq-blogger-settings a {
+.ai-blogger-settings a {
     text-decoration: none;
     color: #2271b1;
 }
 
-.groq-blogger-settings a:hover {
+.ai-blogger-settings a:hover {
     color: #135e96;
 }
 
