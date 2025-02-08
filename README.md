@@ -1,6 +1,6 @@
 # AI Blogger - WordPress Plugin
 
-![Plugin Version](https://img.shields.io/badge/Version-1.0.2-blue) 
+![Plugin Version](https://img.shields.io/badge/Version-1.0.2-blue)
 ![WordPress Tested](https://img.shields.io/badge/WordPress-6.4+-green)
 
 **Author:** [Hridoy Varaby](https://github.com/HridoyVaraby) | [Varabit](https://varabit.com)
@@ -74,6 +74,7 @@ AI Blogger supports these state-of-the-art models:
 ## Changelog
 
 ### 1.0.0 - Initial Release (February 2025)
+
 - Initial plugin release
 - Basic content generation functionality
 - Support for 4 LLM models
@@ -82,12 +83,14 @@ AI Blogger supports these state-of-the-art models:
 - Content template system
 
 ### 0.9.0 - Beta Release (January 2025)
+
 - Beta testing phase
 - Core functionality implemented
 - Basic error handling
 - Localization support added
 
 ### 0.5.0 - Alpha Release (December 2024)
+
 - Initial development version
 - API connection prototype
 - Admin interface skeleton
