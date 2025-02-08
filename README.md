@@ -3,6 +3,8 @@
 ![Plugin Version](https://img.shields.io/badge/Version-1.0.2-blue) 
 ![WordPress Tested](https://img.shields.io/badge/WordPress-6.4+-green)
 
+**Author:** [Hridoy Varaby](https://github.com/HridoyVaraby) | [Varabit](https://varabit.com)
+
 A powerful AI content generation plugin for WordPress that leverages Groq's ultra-fast LLM inference platform.
 
 ## Features
@@ -64,6 +66,10 @@ Groq Blogger supports these state-of-the-art models:
    - Navigate to Tools → Groq Blogger
    - Upload CSV with topics/parameters
    - Queue multiple posts for generation
+
+## Links
+
+- [View Details & Documentation](https://github.com/HridoyVaraby/Groq-Blogger)
 
 ## Changelog
 
