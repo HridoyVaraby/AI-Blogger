@@ -12,7 +12,7 @@
 defined('ABSPATH') || exit;
 
 // Define plugin constants
-define('GROQ_BLOGGER_VERSION', '1.0.0');
+define('GROQ_BLOGGER_VERSION', '1.0.2');
 define('GROQ_BLOGGER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('GROQ_BLOGGER_PLUGIN_URL', plugin_dir_url(__FILE__));
 
