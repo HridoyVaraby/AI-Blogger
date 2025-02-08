@@ -1,6 +1,6 @@
 # Groq Blogger - WordPress Plugin
 
-![Plugin Version](https://img.shields.io/badge/Version-1.0.0-blue) 
+![Plugin Version](https://img.shields.io/badge/Version-1.0.2-blue) 
 ![WordPress Tested](https://img.shields.io/badge/WordPress-6.4+-green)
 
 A powerful AI content generation plugin for WordPress that leverages Groq's ultra-fast LLM inference platform.
