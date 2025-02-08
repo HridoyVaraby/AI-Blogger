@@ -1,4 +1,4 @@
-# Groq Blogger - WordPress Plugin
+# AI Blogger - WordPress Plugin
 
 ![Plugin Version](https://img.shields.io/badge/Version-1.0.2-blue) 
 ![WordPress Tested](https://img.shields.io/badge/WordPress-6.4+-green)
