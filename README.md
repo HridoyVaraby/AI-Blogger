@@ -48,7 +48,7 @@ Groq Blogger supports these state-of-the-art models:
 |---------------------|----------------|---------------------------|
 | Mixtral-8x7b-32768  | 32k tokens     | Long-form content         |
 | Llama2-70b-4096     | 4k tokens      | General purpose writing   |
-| CodeLlama-34b       | 4k tokens      | Technical content         |
+| llama-3.3-70b-versatile      | 128k tokens      | best for writing         |
 | Gemma-7b            | 8k tokens      | Quick generation          |
 
 ## Usage
