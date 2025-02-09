@@ -73,6 +73,16 @@ AI Blogger supports these state-of-the-art models:
 
 ## Changelog
 
+### 1.0.3 - 2025-02-09
+
+- Added Settings link next to Deactivate button in plugins list
+- Improved settings page accessibility
+
+### 1.0.2 - 2025-02-08
+
+- Chaged the plugin name to AI Blogger
+- Improved the plugin
+
 ### 1.0.0 - Initial Release (February 2025)
 
 - Initial plugin release
