@@ -20,7 +20,7 @@ A powerful AI content generation plugin for WordPress that leverages Groq's ultr
 
 ## Requirements
 
-- WordPress 6.4+
+- WordPress 6.5+
 - PHP 7.4+
 - cURL enabled
 - Groq API key (free tier available)
