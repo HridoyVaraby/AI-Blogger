@@ -3,7 +3,7 @@ Contributors: hridoyvaraby
 Donate link: https://varabit.com/
 Tags: ai, content generation, blog posts, seo
 Requires at least: 5.6
-Tested up to: 6.4
+Tested up to: 6.7.2
 Requires PHP: 7.4
 Stable tag: 1.0.3
 License: GPL-2.0-or-later
@@ -25,7 +25,7 @@ Visit Groq's website to create an account and get your API key.
 Yes! The plugin provides filters to modify the AI prompts and output formatting.
 
 == Screenshots ==
-1. Settings page - assets/screenshots/Screenshot 1.png
-2. API configuration - assets/screenshots/Screenshot 2.png  
-3. Post generation interface - assets/screenshots/Screenshot 3.png
-4. Content preview - assets/screenshots/Screenshot 4.png
+1. Settings page - assets/screenshots/Screenshot1.png
+2. API configuration - assets/screenshots/Screenshot2.png
+3. Post generation interface - assets/screenshots/Screenshot3.png
+4. Content preview - assets/screenshots/Screenshot4.png
