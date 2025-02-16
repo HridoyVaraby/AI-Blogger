@@ -1,0 +1,88 @@
+# AI Blogger WordPress Plugin
+# Copyright (C) 2025 Varabit
+# This file is distributed under the same license as the AI Blogger WordPress Plugin package.
+msgid ""
+msgstr ""
+"Project-Id-Version: AI Blogger WordPress Plugin 1.0.3\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-02-16 18:28+0600\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.0\n"
+"X-Poedit-Keywords: __;_e;__ngettext:1,2;_;_n:1,2;_x:1,2c;_ex:1,2c;_nx:4c,1,2;_nx_noop:4c,1,2;_n_noop:1,2;esc_attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;esc_html_x:1,2c;\n"
+"X-Poedit-Basepath: ..\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: ai-blogger.php:
+msgid "Settings"
+msgstr ""
+
+#: admin/class-post-generator.php:
+msgid "Authorization failed"
+msgstr ""
+
+#: admin/class-post-generator.php:
+msgid "Failed to save post"
+msgstr ""
+
+#: admin/class-post-generator.php:
+msgid "Generate Blog Post"
+msgstr ""
+
+#: admin/class-post-generator.php:
+msgid "Generate Post"
+msgstr ""
+
+#: admin/class-post-generator.php:
+msgid "Generate with AI"
+msgstr ""
+
+#: admin/class-post-generator.php:
+msgid "Post generated and saved as draft"
+msgstr ""
+
+#: admin/class-settings.php:
+msgid "AI Blogger"
+msgstr ""
+
+#: admin/class-settings.php:
+msgid "AI Blogger Settings"
+msgstr ""
+
+#: admin/class-settings.php:
+msgid "AI Model"
+msgstr ""
+
+#: admin/class-settings.php:
+msgid "API Configuration"
+msgstr ""
+
+#: admin/class-settings.php:
+msgid "Groq API Key"
+msgstr ""
+
+#: admin/class-settings.php:
+msgid "Groq Cloud Console"
+msgstr ""
+
+#: admin/class-settings.php:
+msgid "Your Groq API key can be found in your "
+msgstr ""
+
+#: includes/class-api-handler.php:
+msgid "API credentials not configured"
+msgstr ""
+
+#: includes/class-api-handler.php:
+msgid "API Error: "
+msgstr ""
+
+#: includes/class-api-handler.php:
+msgid "Unknown error"
+msgstr ""

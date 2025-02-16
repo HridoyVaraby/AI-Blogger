@@ -1,11 +1,17 @@
 <?php
 /**
  * Plugin Name: AI Blogger
- * Description: Generate SEO-friendly blog posts using Groq API
+ * Plugin URI: https://wordpress.org/plugins/ai-blogger/
+ * Description: Generate SEO-friendly blog posts using AI via Groq API
  * Version: 1.0.3
- * Author: <a href="https://github.com/HridoyVaraby">Hridoy Varaby</a> | <a href="https://varabit.com">Varabit</a> | <a href="https://github.com/HridoyVaraby/AI-Blogger">View Details</a>
- * License: GPL-2.0+
+ * Author: Hridoy Varaby, Varabit
+ * Author URI: https://varabit.com/
+ * License: GPL-2.0-or-later
+ * License URI: https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain: ai-blogger
+ * Requires PHP: 7.4
+ * Requires at least: 5.6
+ * Tested up to: 6.4
  */
 
 // Security check
