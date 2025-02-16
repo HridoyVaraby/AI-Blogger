@@ -25,6 +25,7 @@ Visit Groq's website to create an account and get your API key.
 Yes! The plugin provides filters to modify the AI prompts and output formatting.
 
 == Screenshots ==
-1. Settings page for API configuration
-2. Post generation interface with AI options
-3. Generated content preview in WordPress editor
+1. Settings page - assets/screenshots/Screenshot 1.png
+2. API configuration - assets/screenshots/Screenshot 2.png  
+3. Post generation interface - assets/screenshots/Screenshot 3.png
+4. Content preview - assets/screenshots/Screenshot 4.png
