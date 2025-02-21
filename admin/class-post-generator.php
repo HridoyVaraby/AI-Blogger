@@ -30,13 +30,46 @@ class Post_Generator {
                 
                 <table class="form-table">
                     <tr>
+                        <th scope="row"><label for="generation_mode"><?php esc_html_e('Generation Mode', 'ai-blogger'); ?></label></th>
+                        <td>
+                            <select name="generation_mode" id="generation_mode" class="regular-text">
+                                <option value="title"><?php esc_html_e('Generate from Title', 'ai-blogger'); ?></option>
+                                <option value="auto"><?php esc_html_e('Auto Generate Post', 'ai-blogger'); ?></option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr class="title-input">
                         <th scope="row"><label for="post_title"><?php esc_html_e('Post Title', 'ai-blogger'); ?></label></th>
                         <td>
-                            <input type="text" name="post_title" id="post_title" class="regular-text" required>
+                            <input type="text" name="post_title" id="post_title" class="regular-text">
                             <p class="description"><?php esc_html_e('Enter the title for the blog post you want to generate', 'ai-blogger'); ?></p>
                         </td>
                     </tr>
+                    <tr class="auto-input" style="display: none;">
+                        <th scope="row"><label for="post_topics"><?php esc_html_e('Topics/Tags/Categories', 'ai-blogger'); ?></label></th>
+                        <td>
+                            <textarea name="post_topics" id="post_topics" class="large-text" rows="3"></textarea>
+                            <p class="description"><?php esc_html_e('Enter topics, tags, categories, or niche ideas separated by commas. AI will generate SEO-friendly title and content based on these.', 'ai-blogger'); ?></p>
+                        </td>
+                    </tr>
                 </table>
+                <script>
+                jQuery(document).ready(function($) {
+                    $('#generation_mode').on('change', function() {
+                        if ($(this).val() === 'auto') {
+                            $('.title-input').hide();
+                            $('.auto-input').show();
+                            $('#post_title').prop('required', false);
+                            $('#post_topics').prop('required', true);
+                        } else {
+                            $('.title-input').show();
+                            $('.auto-input').hide();
+                            $('#post_title').prop('required', true);
+                            $('#post_topics').prop('required', false);
+                        }
+                    });
+                });
+                </script>
                 
                 <?php submit_button(__('Generate Post', 'ai-blogger')); ?>
             </form>
@@ -53,9 +86,32 @@ class Post_Generator {
         }
 
         // Validate and sanitize input
-        $title = isset($_POST['post_title']) 
-            ? sanitize_text_field(wp_unslash($_POST['post_title'])) 
-            : '';
+        $generation_mode = isset($_POST['generation_mode']) 
+            ? sanitize_text_field(wp_unslash($_POST['generation_mode'])) 
+            : 'title';
+        $title = '';
+        $topics = '';
+
+        if ($generation_mode === 'title') {
+            $title = isset($_POST['post_title']) 
+                ? sanitize_text_field(wp_unslash($_POST['post_title'])) 
+                : '';
+            if (empty($title)) {
+                $this->add_notice('error', __('Post title is required', 'ai-blogger'));
+                wp_redirect(admin_url('edit.php?page=ai-blogger-generate'));
+                exit;
+            }
+        } else {
+            $topics = isset($_POST['post_topics']) 
+                ? sanitize_text_field(wp_unslash($_POST['post_topics'])) 
+                : '';
+            if (empty($topics)) {
+                $this->add_notice('error', __('Topics/Tags/Categories are required', 'ai-blogger'));
+                wp_redirect(admin_url('edit.php?page=ai-blogger-generate'));
+                exit;
+            }
+        }
+
         $api_key = get_option('ai_blogger_api_key');
         $model = get_option('ai_blogger_model');
 
@@ -66,7 +122,18 @@ class Post_Generator {
         }
 
         $api_handler = new \AI_Blogger\API_Handler();
-        $content = $api_handler->generate_content($title, $model, $api_key);
+        if ($generation_mode === 'auto') {
+            $result = $api_handler->generate_from_topics($topics, $model, $api_key);
+            if (is_wp_error($result)) {
+                $this->add_notice('error', $result->get_error_message());
+                wp_redirect(admin_url('edit.php?page=ai-blogger-generate'));
+                exit;
+            }
+            $title = $result['title'];
+            $content = $result['content'];
+        } else {
+            $content = $api_handler->generate_content($title, $model, $api_key);
+        }
 
         if (is_wp_error($content)) {
             $this->add_notice('error', $content->get_error_message());
