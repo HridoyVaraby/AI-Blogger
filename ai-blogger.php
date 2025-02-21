@@ -46,8 +46,9 @@ function ai_blogger_init() {
         new AI_Blogger\Admin\Post_Generator();
     }
 
-    // Load API handler
+    // Load API handler and Image Handler
     require_once AI_BLOGGER_PLUGIN_DIR . 'includes/class-api-handler.php';
+    require_once AI_BLOGGER_PLUGIN_DIR . 'includes/class-image-handler.php';
     new AI_Blogger\API_Handler();
 }
 

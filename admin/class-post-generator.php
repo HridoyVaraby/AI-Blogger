@@ -150,6 +150,13 @@ class Post_Generator {
         ));
 
         if ($post_id) {
+            // Set featured image
+            $image_handler = new \AI_Blogger\Image_Handler();
+            $attachment_id = $image_handler->get_featured_image($title, $content);
+            if (!is_wp_error($attachment_id)) {
+                set_post_thumbnail($post_id, $attachment_id);
+            }
+
             $this->add_notice('success', __('Post generated and saved as draft', 'ai-blogger'));
             wp_redirect(admin_url('post.php?post='.$post_id.'&action=edit'));
             exit;
@@ -169,3 +176,4 @@ class Post_Generator {
         );
     }
 }
+
