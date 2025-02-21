@@ -4,7 +4,7 @@ namespace AI_Blogger\Admin;
 defined('ABSPATH') || exit;
 
 class Settings {
-    private $unsplash_api_key = '6fNF8p76Gf9m_YETZGtdqkZ_LgeJZ51CUoo9wFtTXAk';
+    private $unsplash_api_key = '';
     
     public function __construct() {
         add_action('admin_menu', array($this, 'add_settings_page'));
