@@ -20,8 +20,12 @@ class Settings {
     }
 
     public function register_settings() {
-        register_setting('ai_blogger_options', 'ai_blogger_api_key');
-        register_setting('ai_blogger_options', 'ai_blogger_model');
+        register_setting('ai_blogger_options', 'ai_blogger_api_key', [
+            'sanitize_callback' => 'sanitize_text_field'
+        ]);
+        register_setting('ai_blogger_options', 'ai_blogger_model', [
+            'sanitize_callback' => 'sanitize_text_field'
+        ]);
 
         add_settings_section(
             'ai_blogger_main',
