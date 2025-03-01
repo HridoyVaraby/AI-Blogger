@@ -3,7 +3,7 @@ Contributors: hridoyvaraby
 Donate link: https://varabit.com/
 Tags: ai, content generation, blog posts, seo
 Requires at least: 5.6
-Tested up to: 6.7.2
+Tested up to: 6.7
 Requires PHP: 7.4
 Stable tag: 1.0.3
 License: GPL-2.0-or-later
@@ -29,3 +29,14 @@ Yes! The plugin provides filters to modify the AI prompts and output formatting.
 2. API configuration - assets/screenshots/Screenshot2.png
 3. Post generation interface - assets/screenshots/Screenshot3.png
 4. Content preview - assets/screenshots/Screenshot4.png
+
+== External services ==
+
+This plugin connects to the Groq API to generate blog posts using AI.
+It sends the blog title and context as a request to the API and receives AI-generated content.
+
+Service Name: Groq API
+Data Sent: Blog title, user prompt
+Data Received: AI-generated blog post
+Privacy Policy: Groq Privacy Policy
+Terms of Service: Groq Terms of Use

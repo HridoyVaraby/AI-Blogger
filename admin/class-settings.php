@@ -9,6 +9,14 @@ class Settings {
         add_action('admin_init', array($this, 'register_settings'));
     }
 
+    private function sanitize_api_key($input) {
+        return sanitize_text_field(trim($input));
+    }
+
+    private function sanitize_model($input) {
+        return in_array($input, ['mixtral-8x7b-32768', 'llama2-70b-4096']) ? $input : 'mixtral-8x7b-32768';
+    }
+
     public function add_settings_page() {
         add_options_page(
             __('AI Blogger Settings', 'ai-blogger'),
@@ -20,12 +28,16 @@ class Settings {
     }
 
     public function register_settings() {
-        register_setting('ai_blogger_options', 'ai_blogger_api_key', [
-            'sanitize_callback' => 'sanitize_text_field'
-        ]);
-        register_setting('ai_blogger_options', 'ai_blogger_model', [
-            'sanitize_callback' => 'sanitize_text_field'
-        ]);
+        register_setting(
+            'ai_blogger_options',
+            'ai_blogger_api_key',
+            ['sanitize_callback' => array($this, 'sanitize_api_key')]
+        );
+        register_setting(
+            'ai_blogger_options',
+            'ai_blogger_model',
+            ['sanitize_callback' => array($this, 'sanitize_model')]
+        );
 
         add_settings_section(
             'ai_blogger_main',
@@ -69,9 +81,9 @@ class Settings {
     public function render_api_key_field() {
         $api_key = get_option('ai_blogger_api_key');
         echo '<input type="password" name="ai_blogger_api_key" value="' . esc_attr($api_key) . '" class="regular-text">';
-        echo '<p class="description">' . __('Your Groq API key can be found in your ', 'ai-blogger')
-            . '<a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">'
-            . __('Groq Cloud Console', 'ai-blogger')
+            echo '<p class="description">' . esc_html__('Your Groq API key can be found in your ', 'ai-blogger') 
+            . ' <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">'
+            . esc_html__('Groq Cloud Console', 'ai-blogger') 
             . '</a></p>';
     }
 

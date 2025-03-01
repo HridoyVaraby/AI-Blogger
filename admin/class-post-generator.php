@@ -45,11 +45,17 @@ class Post_Generator {
     }
 
     public function handle_generation() {
-        if (!current_user_can('edit_posts') || !wp_verify_nonce($_POST['_wpnonce'], 'ai_generate_post')) {
-            wp_die(__('Authorization failed', 'ai-blogger'));
+        // Verify nonce and permissions
+        if (!current_user_can('edit_posts') 
+            || !isset($_POST['_wpnonce']) 
+            || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_wpnonce'])), 'ai_generate_post')) {
+            wp_die(esc_html__('Security verification failed', 'ai-blogger'));
         }
 
-        $title = sanitize_text_field($_POST['post_title']);
+        // Validate and sanitize input
+        $title = isset($_POST['post_title']) 
+            ? sanitize_text_field(wp_unslash($_POST['post_title'])) 
+            : '';
         $api_key = get_option('ai_blogger_api_key');
         $model = get_option('ai_blogger_model');
 
