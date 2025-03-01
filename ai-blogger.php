@@ -11,7 +11,7 @@
  * Text Domain: ai-blogger
  * Requires PHP: 7.4
  * Requires at least: 5.6
- * Tested up to: 6.7.2
+ * Tested up to: 6.7
  */
 
 // Security check
