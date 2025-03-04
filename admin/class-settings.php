@@ -9,12 +9,30 @@ class Settings {
         add_action('admin_init', array($this, 'register_settings'));
     }
 
-    private function sanitize_api_key($input) {
+    public function sanitize_api_key($input) {
         return sanitize_text_field(trim($input));
     }
 
-    private function sanitize_model($input) {
-        return in_array($input, ['mixtral-8x7b-32768', 'llama2-70b-4096']) ? $input : 'mixtral-8x7b-32768';
+    public function sanitize_options($options) {
+        if (!isset($options['ai_blogger_api_key']) || !isset($_POST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_wpnonce'])), 'ai_blogger_options-options')) {
+            return $options;
+        }
+        
+        $clean_options = array();
+        $clean_options['ai_blogger_api_key'] = $this->sanitize_api_key($options['ai_blogger_api_key']);
+        $clean_options['ai_blogger_model'] = $this->sanitize_model($options['ai_blogger_model']);
+        
+        return $clean_options;
+    }
+
+    public function sanitize_model($input) {
+        $valid_models = [
+            'llama-3.3-70b-versatile',
+            'mixtral-8x7b-32768',
+            'deepseek-r1-distill-llama-70b',
+            'gemma2-9b-it'
+        ];
+        return in_array($input, $valid_models) ? $input : 'llama-3.3-70b-versatile';
     }
 
     public function add_settings_page() {
@@ -31,12 +49,17 @@ class Settings {
         register_setting(
             'ai_blogger_options',
             'ai_blogger_api_key',
-            ['sanitize_callback' => array($this, 'sanitize_api_key')]
+            array(
+                'sanitize_callback' => array($this, 'sanitize_api_key')
+            )
         );
+
         register_setting(
-            'ai_blogger_options',
+            'ai_blogger_options', 
             'ai_blogger_model',
-            ['sanitize_callback' => array($this, 'sanitize_model')]
+            array(
+                'sanitize_callback' => array($this, 'sanitize_model')
+            )
         );
 
         add_settings_section(
@@ -70,7 +93,7 @@ class Settings {
             <form action="options.php" method="post">
                 <?php
                 settings_fields('ai_blogger_options');
-            do_settings_sections('ai-blogger-settings');
+                do_settings_sections('ai-blogger-settings');
                 submit_button();
                 ?>
             </form>
@@ -81,7 +104,7 @@ class Settings {
     public function render_api_key_field() {
         $api_key = get_option('ai_blogger_api_key');
         echo '<input type="password" name="ai_blogger_api_key" value="' . esc_attr($api_key) . '" class="regular-text">';
-            echo '<p class="description">' . esc_html__('Your Groq API key can be found in your ', 'ai-blogger') 
+        echo '<p class="description">' . esc_html__('Your Groq API key can be found in your ', 'ai-blogger') 
             . ' <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">'
             . esc_html__('Groq Cloud Console', 'ai-blogger') 
             . '</a></p>';

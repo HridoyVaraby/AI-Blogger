@@ -1,7 +1,7 @@
 === AI Blogger ===
 Contributors: hridoyvaraby
 Donate link: https://varabit.com/
-Tags: ai, content generation, blog, writing, seo, groq
+Tags: ai, content generation, blog, seo, groq
 Requires at least: 5.6
 Tested up to: 6.7
 Requires PHP: 7.4
