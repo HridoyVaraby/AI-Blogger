@@ -9,12 +9,24 @@ class Settings {
         add_action('admin_init', array($this, 'register_settings'));
     }
 
-    public function sanitize_api_key($input) {
+    private function sanitize_api_key($input) {
         return sanitize_text_field(trim($input));
     }
 
+    /**
+     * Sanitize all plugin options
+     * 
+     * @param array $options The options array to sanitize
+     * @return array Sanitized options
+     */
     public function sanitize_options($options) {
-        if (!isset($options['ai_blogger_api_key']) || !isset($_POST['_wpnonce']) || !wp_verify_nonce(sanitize_text_field(wp_unslash($_POST['_wpnonce'])), 'ai_blogger_options-options')) {
+        if (!isset($options['ai_blogger_api_key'])) {
+            return $options;
+        }
+
+        // Verify nonce
+        $nonce = isset($_POST['_wpnonce']) ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '';
+        if (!wp_verify_nonce($nonce, 'ai_blogger_options-options')) {
             return $options;
         }
         
@@ -45,21 +57,45 @@ class Settings {
         );
     }
 
+    /**
+     * Static sanitization callback for API key
+     * 
+     * @param string $input The input to sanitize
+     * @return string Sanitized input
+     */
+    public static function sanitize_api_key_static($input) {
+        return sanitize_text_field(trim($input));
+    }
+
+    /**
+     * Static sanitization callback for model selection
+     * 
+     * @param string $input The input to sanitize
+     * @return string Sanitized input
+     */
+    public static function sanitize_model_static($input) {
+        $valid_models = [
+            'llama-3.3-70b-versatile',
+            'mixtral-8x7b-32768',
+            'deepseek-r1-distill-llama-70b',
+            'gemma2-9b-it'
+        ];
+        return in_array($input, $valid_models) ? $input : 'llama-3.3-70b-versatile';
+    }
+
     public function register_settings() {
+        // Register API key setting with static sanitization callback
         register_setting(
             'ai_blogger_options',
             'ai_blogger_api_key',
-            array(
-                'sanitize_callback' => array($this, 'sanitize_api_key')
-            )
+            'AI_Blogger\\Admin\\Settings::sanitize_api_key_static'
         );
 
+        // Register model setting with static sanitization callback
         register_setting(
             'ai_blogger_options', 
             'ai_blogger_model',
-            array(
-                'sanitize_callback' => array($this, 'sanitize_model')
-            )
+            'AI_Blogger\\Admin\\Settings::sanitize_model_static'
         );
 
         add_settings_section(
@@ -93,7 +129,7 @@ class Settings {
             <form action="options.php" method="post">
                 <?php
                 settings_fields('ai_blogger_options');
-                do_settings_sections('ai-blogger-settings');
+            do_settings_sections('ai-blogger-settings');
                 submit_button();
                 ?>
             </form>
@@ -104,7 +140,7 @@ class Settings {
     public function render_api_key_field() {
         $api_key = get_option('ai_blogger_api_key');
         echo '<input type="password" name="ai_blogger_api_key" value="' . esc_attr($api_key) . '" class="regular-text">';
-        echo '<p class="description">' . esc_html__('Your Groq API key can be found in your ', 'ai-blogger') 
+            echo '<p class="description">' . esc_html__('Your Groq API key can be found in your ', 'ai-blogger') 
             . ' <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer">'
             . esc_html__('Groq Cloud Console', 'ai-blogger') 
             . '</a></p>';
