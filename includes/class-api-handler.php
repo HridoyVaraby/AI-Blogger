@@ -25,7 +25,7 @@ class API_Handler {
                     ),
                     array(
                         'role' => 'user',
-                        'content' => "Write a blog post about: $title. Include an introduction, 3-5 main sections with subheadings, and a conclusion."
+                        'content' => "Write an 1000 words blog post about: $title. Include an introduction, 3-5 main sections with subheadings, and a conclusion."
                     )
                 ),
                 'temperature' => 0.7,
