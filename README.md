@@ -1,7 +1,7 @@
 # AI Blogger - WordPress Plugin
 
-![Plugin Version](https://img.shields.io/badge/Version-1.0.3-blue)
-![WordPress Tested](https://img.shields.io/badge/WordPress-6.4+-green)
+![Plugin Version](https://img.shields.io/badge/Version-1.0.4-blue)
+![WordPress Tested](https://img.shields.io/badge/WordPress-6.7+-green)
 
 **Author:** [Hridoy Varaby](https://github.com/HridoyVaraby) | [Varabit](https://varabit.com)
 
