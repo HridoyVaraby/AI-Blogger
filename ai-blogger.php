@@ -3,7 +3,7 @@
  * Plugin Name: AI Blogger
  * Plugin URI: https://wordpress.org/plugins/ai-blogger/
  * Description: Generate SEO-friendly blog posts using AI via Groq API
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: Hridoy Varaby, Varabit
  * Author URI: https://varabit.com/
  * License: GPL-2.0-or-later
@@ -18,7 +18,7 @@
 defined('ABSPATH') || exit;
 
 // Define plugin constants
-define('AI_BLOGGER_VERSION', '1.0.3');
+define('AI_BLOGGER_VERSION', '1.0.4');
 define('AI_BLOGGER_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('AI_BLOGGER_PLUGIN_URL', plugin_dir_url(__FILE__));
 
