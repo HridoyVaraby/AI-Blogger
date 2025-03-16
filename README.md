@@ -27,11 +27,20 @@ A powerful AI content generation plugin for WordPress that leverages Groq's ultr
 
 ## Installation
 
+Option 1: WordPress Plugin Repository (Recommended)
+1. In your WordPress Dashboard, go to Plugins → Add New
+2. Search for "AI Blogger"
+3. Click "Install Now" and then "Activate"
+4. Navigate to Settings → AI Blogger to configure your API key
+
+Option 2: Manual Installation
 1. Download the plugin ZIP file
 2. Navigate to WordPress Admin → Plugins → Add New
 3. Click "Upload Plugin" and select the ZIP file
 4. Activate the plugin
 5. Navigate to Settings → AI Blogger to configure your API key
+
+The plugin is available on the [WordPress Plugin Repository](https://wordpress.org/plugins/ai-blogger/)
 
 ## Configuration
 
