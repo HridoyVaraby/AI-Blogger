@@ -42,18 +42,25 @@ class API_Handler {
         $status = wp_remote_retrieve_response_code($response);
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
-        if ($status !== 200) {
-            return new \WP_Error('api_error', __('API Error: ', 'ai-blogger') . ($body['error']['message'] ?? __('Unknown error', 'ai-blogger')));
+        if ($status !== 200 || !isset($body['choices'][0]['message']['content'])) {
+            $error_message = isset($body['error']) ? $body['error']['message'] : __('Unknown error', 'ai-blogger');
+            error_log('AI Blogger API Error: ' . print_r($body, true));
+            return new \WP_Error('api_error', __('API Error: ', 'ai-blogger') . $error_message);
         }
 
-        $generated_content = $body['choices'][0]['message']['content'] ?? '';
+        $generated_content = $body['choices'][0]['message']['content'];
         
         // Extract title and content from the response
         preg_match('/TITLE:\s*(.+?)\s*CONTENT:/s', $generated_content, $title_matches);
         preg_match('/CONTENT:\s*(.+)$/s', $generated_content, $content_matches);
 
-        $title = trim($title_matches[1] ?? '');
-        $content = trim($content_matches[1] ?? '');
+        if (empty($title_matches[1]) || empty($content_matches[1])) {
+            error_log('AI Blogger Content Parsing Error: ' . $generated_content);
+            return new \WP_Error('parsing_error', __('Failed to parse generated content', 'ai-blogger'));
+        }
+
+        $title = trim($title_matches[1]);
+        $content = trim($content_matches[1]);
 
         return array(
             'title' => $title,
@@ -96,11 +103,13 @@ class API_Handler {
         $status = wp_remote_retrieve_response_code($response);
         $body = json_decode(wp_remote_retrieve_body($response), true);
 
-        if ($status !== 200) {
-            return new \WP_Error('api_error', __('API Error: ', 'ai-blogger') . ($body['error']['message'] ?? __('Unknown error', 'ai-blogger')));
+        if ($status !== 200 || !isset($body['choices'][0]['message']['content'])) {
+            $error_message = isset($body['error']) ? $body['error']['message'] : __('Unknown error', 'ai-blogger');
+            error_log('AI Blogger API Error: ' . print_r($body, true));
+            return new \WP_Error('api_error', __('API Error: ', 'ai-blogger') . $error_message);
         }
 
-        return $this->sanitize_content($body['choices'][0]['message']['content'] ?? '');
+        return $this->sanitize_content($body['choices'][0]['message']['content']);
     }
 
     private function sanitize_content($content) {

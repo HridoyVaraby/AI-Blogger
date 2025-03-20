@@ -4,7 +4,7 @@ namespace AI_Blogger\Admin;
 defined('ABSPATH') || exit;
 
 class Settings {
-    private $unsplash_api_key = '6fNF8p76Gf9m_YETZGtdqkZ_LgeJZ51CUoo9wFtTXAk';
+    private $unsplash_api_key = '';
     
     public function __construct() {
         add_action('admin_menu', array($this, 'add_settings_page'));
@@ -16,7 +16,13 @@ class Settings {
     }
 
     public function sanitize_model($input) {
-        return in_array($input, ['mixtral-8x7b-32768', 'llama2-70b-4096']) ? $input : 'mixtral-8x7b-32768';
+        $valid_models = array(
+            'llama-3.3-70b-versatile',
+            'mixtral-8x7b-32768',
+            'deepseek-r1-distill-llama-70b',
+            'gemma2-9b-it'
+        );
+        return in_array($input, $valid_models) ? $input : 'llama-3.3-70b-versatile';
     }
 
     public function add_settings_page() {
