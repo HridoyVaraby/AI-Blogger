@@ -46,9 +46,11 @@ function ai_blogger_init() {
         new AI_Blogger\Admin\Post_Generator();
     }
 
-    // Load API handler
+    // Load API handlers
     require_once AI_BLOGGER_PLUGIN_DIR . 'includes/class-api-handler.php';
+    require_once AI_BLOGGER_PLUGIN_DIR . 'includes/class-pexels-handler.php';
     new AI_Blogger\API_Handler();
+    new AI_Blogger\Pexels_Handler(get_option('ai_blogger_pexels_key'));
 }
 
 // Add plugin action links

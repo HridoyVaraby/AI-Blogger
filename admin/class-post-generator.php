@@ -60,6 +60,7 @@ class Post_Generator {
         $model = get_option('ai_blogger_model');
 
         if (empty($api_key) || empty($model)) {
+            error_log('API key or model not configured');
             $this->add_notice('error', __('API credentials not configured', 'ai-blogger'));
             wp_redirect(admin_url('edit.php?page=ai-blogger-generate'));
             exit;
@@ -83,6 +84,36 @@ class Post_Generator {
         ));
 
         if ($post_id) {
+            // Add images from Pexels
+            $pexels = new \AI_Blogger\Pexels_Handler(get_option('ai_blogger_pexels_key'));
+            error_log('Attempting to search Pexels for images with title: ' . $title);
+            $images = $pexels->search_images($title);
+            
+            if (is_wp_error($images)) {
+                error_log('Pexels API error: ' . $images->get_error_message());
+            } elseif (!empty($images)) {
+                error_log('Found ' . count($images) . ' images from Pexels');
+                $selected_image = $pexels->select_most_relevant_image($images, $title);
+                $attachment_id = $pexels->attach_image_to_post(
+                    $selected_image['src']['large'], 
+                    $title
+                );
+                
+                if (is_wp_error($attachment_id)) {
+                    error_log('Image attachment error: ' . $attachment_id->get_error_message());
+                } else {
+                    // Set featured image
+                    set_post_thumbnail($post_id, $attachment_id);
+                    
+                    // Add images to post content
+                    $image_html = '<figure><img src="' . wp_get_attachment_url($attachment_id) . '" alt="' . esc_attr($title) . '"></figure>';
+                    wp_update_post(array(
+                        'ID' => $post_id,
+                        'post_content' => $image_html . wp_kses_post($content)
+                    ));
+                }
+            }
+            
             $this->add_notice('success', __('Post generated and saved as draft', 'ai-blogger'));
             wp_redirect(admin_url('post.php?post='.$post_id.'&action=edit'));
             exit;

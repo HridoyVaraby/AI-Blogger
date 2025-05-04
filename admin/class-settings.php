@@ -97,6 +97,13 @@ class Settings {
             'ai_blogger_model',
             'AI_Blogger\\Admin\\Settings::sanitize_model_static'
         );
+        
+        // Register Pexels API key setting
+        register_setting(
+            'ai_blogger_options',
+            'ai_blogger_pexels_key',
+            'AI_Blogger\\Admin\\Settings::sanitize_api_key_static'
+        );
 
         add_settings_section(
             'ai_blogger_main',
@@ -117,6 +124,14 @@ class Settings {
             'ai_model',
             __('AI Model', 'ai-blogger'),
             array($this, 'render_model_field'),
+            'ai-blogger-settings',
+            'ai_blogger_main'
+        );
+        
+        add_settings_field(
+            'ai_pexels_key',
+            __('Pexels API Key', 'ai-blogger'),
+            array($this, 'render_pexels_key_field'),
             'ai-blogger-settings',
             'ai_blogger_main'
         );
@@ -161,5 +176,14 @@ class Settings {
                 . esc_html($label) . '</option>';
         }
         echo '</select>';
+    }
+    
+    public function render_pexels_key_field() {
+        $api_key = get_option('ai_blogger_pexels_key');
+        echo '<input type="password" name="ai_blogger_pexels_key" value="' . esc_attr($api_key) . '" class="regular-text">';
+        echo '<p class="description">' . esc_html__('Your Pexels API key can be obtained from ', 'ai-blogger') 
+            . ' <a href="https://www.pexels.com/api/new/" target="_blank" rel="noopener noreferrer">'
+            . esc_html__('Pexels API', 'ai-blogger') 
+            . '</a></p>';
     }
 }
