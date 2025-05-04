@@ -14,7 +14,7 @@ class Pexels_Handler {
     /**
      * Search for relevant images on Pexels
      * 
-     * @param string $query Search query
+     * @param string|array $query Search query or array of keywords
      * @param int $per_page Number of results per page
      * @return array|WP_Error Array of image data or WP_Error on failure
      */
@@ -23,7 +23,58 @@ class Pexels_Handler {
             error_log('Pexels API key is empty or not configured');
             return new \WP_Error('missing_api_key', __('Pexels API key is not configured', 'ai-blogger'));
         }
-
+        
+        // Handle array of keywords
+        if (is_array($query)) {
+            error_log('Received array of keywords for image search: ' . print_r($query, true));
+            
+            // Try the first keyword (most relevant)
+            if (!empty($query[0])) {
+                $result = $this->perform_search($query[0], $per_page);
+                
+                // If we got results, return them
+                if (!is_wp_error($result) && !empty($result)) {
+                    return $result;
+                }
+                
+                // If no results with first keyword, try combining top keywords
+                if (count($query) >= 2) {
+                    $combined_query = $query[0] . ' ' . $query[1];
+                    error_log('First keyword returned no results, trying combined keywords: ' . $combined_query);
+                    
+                    $result = $this->perform_search($combined_query, $per_page);
+                    if (!is_wp_error($result) && !empty($result)) {
+                        return $result;
+                    }
+                }
+                
+                // Try other keywords if still no results
+                for ($i = 1; $i < min(count($query), 3); $i++) {
+                    error_log('Trying alternative keyword: ' . $query[$i]);
+                    $result = $this->perform_search($query[$i], $per_page);
+                    
+                    if (!is_wp_error($result) && !empty($result)) {
+                        return $result;
+                    }
+                }
+            }
+            
+            // If we've tried keywords and got nothing, use the original query as a string
+            $query = implode(' ', array_slice($query, 0, 3));
+            error_log('No results with individual keywords, using combined query: ' . $query);
+        }
+        
+        return $this->perform_search($query, $per_page);
+    }
+    
+    /**
+     * Perform the actual search request to Pexels API
+     * 
+     * @param string $query Search query
+     * @param int $per_page Number of results per page
+     * @return array|WP_Error Array of image data or WP_Error on failure
+     */
+    private function perform_search($query, $per_page = 5) {
         $url = $this->base_url . 'search?query=' . urlencode($query) . '&per_page=' . $per_page;
         error_log('Pexels API request URL: ' . $url);
         
@@ -35,7 +86,7 @@ class Pexels_Handler {
             'sslverify' => true
         ));
         
-        error_log('Sending request to Pexels API with Authorization header: ' . $this->api_key);
+        error_log('Sending request to Pexels API with query: ' . $query);
 
         if (is_wp_error($response)) {
             error_log('Pexels API request failed: ' . $response->get_error_message());
@@ -131,16 +182,103 @@ class Pexels_Handler {
     }
 
     /**
+     * Extract keywords from post content
+     * 
+     * @param string $content Post content to analyze
+     * @return array Array of relevant keywords
+     */
+    private function extract_keywords($content) {
+        // Remove HTML tags
+        $text = wp_strip_all_tags($content);
+        
+        // Remove common stop words
+        $stop_words = array('the', 'and', 'a', 'to', 'of', 'in', 'is', 'it', 'that', 'for', 'on', 'with', 'as', 'at', 'by', 'from');
+        
+        // Extract words and count frequency
+        $words = preg_split('/\s+/', strtolower($text));
+        $word_counts = array_count_values($words);
+        
+        // Filter out stop words and short words
+        $keywords = array();
+        foreach ($word_counts as $word => $count) {
+            if (!in_array($word, $stop_words) && strlen($word) > 3 && $count > 1) {
+                $keywords[$word] = $count;
+            }
+        }
+        
+        // Sort by frequency
+        arsort($keywords);
+        
+        return array_keys($keywords);
+    }
+    
+    /**
      * Get the most relevant image from search results
      * 
      * @param array $images Array of image data from Pexels
-     * @param string $query Original search query
+     * @param string|array $query Original search query or keywords
      * @return array Selected image data
      */
     public function select_most_relevant_image($images, $query) {
-        // Simple selection - just pick the first result
-        // Can be enhanced with more sophisticated relevance algorithms
-        $selected_image = $images[0];
+        // If no images, return empty
+        if (empty($images)) {
+            error_log('No images to select from');
+            return [];
+        }
+        
+        // Convert query to keywords array if it's a string
+        $keywords = is_array($query) ? $query : [$query];
+        error_log('Selecting most relevant image using keywords: ' . print_r($keywords, true));
+        
+        // If we only have one image, return it
+        if (count($images) === 1) {
+            error_log('Only one image available, selecting it');
+            $selected_image = $images[0];
+        } else {
+            // Score each image based on alt text and photographer name relevance to keywords
+            $scored_images = [];
+            foreach ($images as $index => $image) {
+                $score = 0;
+                
+                // Get text to match against (alt text, photographer name, etc.)
+                $alt_text = isset($image['alt']) ? strtolower($image['alt']) : '';
+                $photographer = isset($image['photographer']) ? strtolower($image['photographer']) : '';
+                $combined_text = $alt_text . ' ' . $photographer;
+                
+                // Score based on keyword matches
+                foreach ($keywords as $keyword) {
+                    $keyword = strtolower(trim($keyword));
+                    if (!empty($keyword) && strpos($combined_text, $keyword) !== false) {
+                        $score += 2; // Direct match
+                    }
+                    
+                    // Check for partial matches
+                    $keyword_parts = explode(' ', $keyword);
+                    foreach ($keyword_parts as $part) {
+                        if (strlen($part) > 3 && strpos($combined_text, $part) !== false) {
+                            $score += 1; // Partial match
+                        }
+                    }
+                }
+                
+                // Prefer landscape images for blog posts
+                if (isset($image['width']) && isset($image['height']) && $image['width'] > $image['height']) {
+                    $score += 1;
+                }
+                
+                // Store score
+                $scored_images[$index] = $score;
+            }
+            
+            // Sort by score (descending)
+            arsort($scored_images);
+            error_log('Image scores: ' . print_r($scored_images, true));
+            
+            // Get highest scored image
+            $best_index = key($scored_images);
+            $selected_image = $images[$best_index];
+            error_log('Selected best image with index ' . $best_index . ' and score ' . $scored_images[$best_index]);
+        }
         
         // Debug the image structure
         error_log('Selected image structure: ' . print_r($selected_image, true));

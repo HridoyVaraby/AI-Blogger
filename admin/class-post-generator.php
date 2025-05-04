@@ -67,20 +67,28 @@ class Post_Generator {
         }
 
         $api_handler = new \AI_Blogger\API_Handler();
-        $content = $api_handler->generate_content($title, $model, $api_key);
+        $result = $api_handler->generate_content($title, $model, $api_key);
 
-        if (is_wp_error($content)) {
-            $this->add_notice('error', $content->get_error_message());
+        if (is_wp_error($result)) {
+            $this->add_notice('error', $result->get_error_message());
             wp_redirect(admin_url('edit.php?page=ai-blogger-generate'));
             exit;
         }
+        
+        // Extract content and keywords from the result
+        $content = $result['content'];
+        $keywords = !empty($result['keywords']) ? $result['keywords'] : [$title];
+        error_log('Extracted keywords for image search: ' . print_r($keywords, true));
 
         $post_id = wp_insert_post(array(
             'post_title' => $title,
             'post_content' => wp_kses_post($content),
             'post_status' => 'draft',
             'post_author' => get_current_user_id(),
-            'post_type' => 'post'
+            'post_type' => 'post',
+            'meta_input' => array(
+                'ai_blogger_keywords' => $keywords
+            )
         ));
 
         if ($post_id) {
@@ -92,15 +100,16 @@ class Post_Generator {
                 $this->add_notice('warning', __('Post created without images - Pexels API key not configured', 'ai-blogger'));
             } else {
                 $pexels = new \AI_Blogger\Pexels_Handler($pexels_key);
-                error_log('Attempting to search Pexels for images with title: ' . $title);
-                $images = $pexels->search_images($title);
+                // Pass the entire keywords array to try multiple keywords if needed
+                error_log('Attempting to search Pexels for images with keywords: ' . print_r($keywords, true));
+                $images = $pexels->search_images($keywords);
                 
                 if (is_wp_error($images)) {
                     error_log('Pexels API error: ' . $images->get_error_message());
                     $this->add_notice('warning', __('Post created without images - ' . $images->get_error_message(), 'ai-blogger'));
                 } elseif (!empty($images)) {
                     error_log('Found ' . count($images) . ' images from Pexels');
-                    $selected_image = $pexels->select_most_relevant_image($images, $title);
+                    $selected_image = $pexels->select_most_relevant_image($images, $keywords);
                     
                     // Verify the image URL structure
                     error_log('Checking image structure: ' . print_r($selected_image, true));

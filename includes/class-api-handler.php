@@ -21,11 +21,11 @@ class API_Handler {
                 'messages' => array(
                     array(
                         'role' => 'system',
-                        'content' => 'You are an expert blog writer. Generate a comprehensive, SEO-optimized blog post in HTML format using proper heading tags (h2-h4), paragraphs, and semantic markup. Include relevant keywords naturally within the content.'
+                        'content' => 'You are an expert blog writer. Generate a comprehensive, SEO-optimized blog post in HTML format using proper heading tags (h2-h4), paragraphs, and semantic markup. Include relevant keywords naturally within the content. After the blog post, provide a JSON object with 5-10 relevant keywords for image search in the format: {"keywords": ["keyword1", "keyword2", ...]}'
                     ),
                     array(
                         'role' => 'user',
-                        'content' => "Write an 1000 words blog post about: $title. Include an introduction, 3-5 main sections with subheadings, and a conclusion."
+                        'content' => "Write an 1000 words blog post about: $title. Include an introduction, 3-5 main sections with subheadings, and a conclusion. After the blog post, provide a JSON object with 5-10 relevant keywords for image search."
                     )
                 ),
                 'temperature' => 0.7,
@@ -44,8 +44,17 @@ class API_Handler {
         if ($status_code !== 200) {
             return new \WP_Error('api_error', __('API Error: ', 'ai-blogger') . ($body['error']['message'] ?? __('Unknown error', 'ai-blogger')));
         }
-
-        return $this->sanitize_content($body['choices'][0]['message']['content'] ?? '');
+        
+        $content = $body['choices'][0]['message']['content'] ?? '';
+        
+        // Extract keywords from the content
+        $keywords = $this->extract_keywords($content);
+        
+        // Return both content and keywords
+        return array(
+            'content' => $this->sanitize_content($content),
+            'keywords' => $keywords
+        );
     }
 
     private function sanitize_content($content) {
@@ -54,5 +63,42 @@ class API_Handler {
         $allowed_html['ul'] = $allowed_html['ol'] = $allowed_html['li'] = array();
         
         return wp_kses($content, $allowed_html);
+    }
+    
+    /**
+     * Extract keywords from the AI-generated content
+     * 
+     * @param string $content The AI-generated content
+     * @return array Array of keywords
+     */
+    private function extract_keywords($content) {
+        // Default keywords if extraction fails
+        $default_keywords = [];
+        
+        // Try to find JSON object with keywords at the end of the content
+        if (preg_match('/\{\s*"keywords"\s*:\s*\[(.*?)\]\s*\}/s', $content, $matches)) {
+            // Found JSON format
+            $keywords_json = '{"keywords":[' . $matches[1] . ']}';
+            $keywords_data = json_decode($keywords_json, true);
+            
+            if (json_last_error() === JSON_ERROR_NONE && !empty($keywords_data['keywords'])) {
+                error_log('Successfully extracted keywords: ' . print_r($keywords_data['keywords'], true));
+                return $keywords_data['keywords'];
+            }
+        }
+        
+        // Alternative approach: look for keywords list in different format
+        if (preg_match('/keywords\s*:\s*\[(.*?)\]/is', $content, $matches)) {
+            $keywords_text = $matches[1];
+            $keywords_array = array_map('trim', explode(',', str_replace('"', '', $keywords_text)));
+            
+            if (!empty($keywords_array)) {
+                error_log('Extracted keywords using alternative method: ' . print_r($keywords_array, true));
+                return $keywords_array;
+            }
+        }
+        
+        error_log('Failed to extract keywords from content');
+        return $default_keywords;
     }
 }
