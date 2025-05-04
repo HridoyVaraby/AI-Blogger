@@ -85,35 +85,71 @@ class Post_Generator {
 
         if ($post_id) {
             // Add images from Pexels
-            $pexels = new \AI_Blogger\Pexels_Handler(get_option('ai_blogger_pexels_key'));
-            error_log('Attempting to search Pexels for images with title: ' . $title);
-            $images = $pexels->search_images($title);
+            $pexels_key = get_option('ai_blogger_pexels_key');
             
-            if (is_wp_error($images)) {
-                error_log('Pexels API error: ' . $images->get_error_message());
-            } elseif (!empty($images)) {
-                error_log('Found ' . count($images) . ' images from Pexels');
-                $selected_image = $pexels->select_most_relevant_image($images, $title);
-                $attachment_id = $pexels->attach_image_to_post(
-                    $selected_image['src']['large'], 
-                    $title
-                );
+            if (empty($pexels_key)) {
+                error_log('Pexels API key is not configured');
+                $this->add_notice('warning', __('Post created without images - Pexels API key not configured', 'ai-blogger'));
+            } else {
+                $pexels = new \AI_Blogger\Pexels_Handler($pexels_key);
+                error_log('Attempting to search Pexels for images with title: ' . $title);
+                $images = $pexels->search_images($title);
                 
-                if (is_wp_error($attachment_id)) {
-                    error_log('Image attachment error: ' . $attachment_id->get_error_message());
-                } else {
-                    // Set featured image
-                    set_post_thumbnail($post_id, $attachment_id);
+                if (is_wp_error($images)) {
+                    error_log('Pexels API error: ' . $images->get_error_message());
+                    $this->add_notice('warning', __('Post created without images - ' . $images->get_error_message(), 'ai-blogger'));
+                } elseif (!empty($images)) {
+                    error_log('Found ' . count($images) . ' images from Pexels');
+                    $selected_image = $pexels->select_most_relevant_image($images, $title);
                     
-                    // Add images to post content
-                    $image_html = '<figure><img src="' . wp_get_attachment_url($attachment_id) . '" alt="' . esc_attr($title) . '"></figure>';
-                    wp_update_post(array(
-                        'ID' => $post_id,
-                        'post_content' => $image_html . wp_kses_post($content)
-                    ));
+                    // Verify the image URL structure
+                    error_log('Checking image structure: ' . print_r($selected_image, true));
+                    
+                    // Handle different possible image URL structures
+                    $image_url = null;
+                    if (isset($selected_image['src']) && isset($selected_image['src']['large'])) {
+                        $image_url = $selected_image['src']['large'];
+                    } elseif (isset($selected_image['src']) && isset($selected_image['src']['original'])) {
+                        $image_url = $selected_image['src']['original'];
+                    } elseif (isset($selected_image['url'])) {
+                        $image_url = $selected_image['url'];
+                    }
+                    
+                    if ($image_url) {
+                        error_log('Selected image URL: ' . $image_url);
+                        
+                        $attachment_id = $pexels->attach_image_to_post($image_url, $title);
+                        
+                        if (is_wp_error($attachment_id)) {
+                            error_log('Image attachment error: ' . $attachment_id->get_error_message());
+                            $this->add_notice('warning', __('Post created but image could not be attached', 'ai-blogger'));
+                        } else {
+                            // Set featured image
+                            set_post_thumbnail($post_id, $attachment_id);
+                            
+                            // Add images to post content
+                            $image_html = '<figure><img src="' . wp_get_attachment_url($attachment_id) . '" alt="' . esc_attr($title) . '"></figure>';
+                            wp_update_post(array(
+                                'ID' => $post_id,
+                                'post_content' => $image_html . wp_kses_post($content)
+                            ));
+                            
+                            error_log('Successfully added image to post content');
+                        }
+                    } else {
+                        error_log('Invalid image structure returned from Pexels API');
+                        error_log('Image data: ' . print_r($selected_image, true));
+                        $this->add_notice('warning', __('Post created without images - Invalid image data', 'ai-blogger'));
+                    }
+                } elseif (empty($images)) {
+                    error_log('No images found for query: ' . $title);
+                    $this->add_notice('warning', __('Post created without images - No relevant images found', 'ai-blogger'));
+                } else {
+                    error_log('No valid image URL found in the Pexels API response');
+                    $this->add_notice('warning', __('Post created without images - No valid image URL found', 'ai-blogger'));
                 }
             }
-            
+        
             $this->add_notice('success', __('Post generated and saved as draft', 'ai-blogger'));
             wp_redirect(admin_url('post.php?post='.$post_id.'&action=edit'));
             exit;
