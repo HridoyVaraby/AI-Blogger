@@ -213,14 +213,15 @@ class Pexels_Handler {
     }
     
     /**
-     * Get the most relevant image from search results
+     * Get multiple relevant images from search results
      * 
      * @param array $images Array of image data from Pexels
      * @param string|array $query Original search query or keywords
-     * @return array Selected image data
+     * @param int $count Number of images to return (default: 3)
+     * @return array Array of selected image data
      */
-    public function select_most_relevant_image($images, $query) {
-        // If no images, return empty
+    public function select_relevant_images($images, $query, $count = 3) {
+        // If no images, return empty array
         if (empty($images)) {
             error_log('No images to select from');
             return [];
@@ -228,79 +229,114 @@ class Pexels_Handler {
         
         // Convert query to keywords array if it's a string
         $keywords = is_array($query) ? $query : [$query];
-        error_log('Selecting most relevant image using keywords: ' . print_r($keywords, true));
+        error_log('Selecting ' . $count . ' relevant images using keywords: ' . print_r($keywords, true));
         
-        // If we only have one image, return it
-        if (count($images) === 1) {
-            error_log('Only one image available, selecting it');
-            $selected_image = $images[0];
-        } else {
-            // Score each image based on alt text and photographer name relevance to keywords
-            $scored_images = [];
-            foreach ($images as $index => $image) {
-                $score = 0;
-                
-                // Get text to match against (alt text, photographer name, etc.)
-                $alt_text = isset($image['alt']) ? strtolower($image['alt']) : '';
-                $photographer = isset($image['photographer']) ? strtolower($image['photographer']) : '';
-                $combined_text = $alt_text . ' ' . $photographer;
-                
-                // Score based on keyword matches
-                foreach ($keywords as $keyword) {
-                    $keyword = strtolower(trim($keyword));
-                    if (!empty($keyword) && strpos($combined_text, $keyword) !== false) {
-                        $score += 2; // Direct match
-                    }
-                    
-                    // Check for partial matches
-                    $keyword_parts = explode(' ', $keyword);
-                    foreach ($keyword_parts as $part) {
-                        if (strlen($part) > 3 && strpos($combined_text, $part) !== false) {
-                            $score += 1; // Partial match
-                        }
-                    }
-                }
-                
-                // Prefer landscape images for blog posts
-                if (isset($image['width']) && isset($image['height']) && $image['width'] > $image['height']) {
-                    $score += 1;
-                }
-                
-                // Store score
-                $scored_images[$index] = $score;
-            }
-            
-            // Sort by score (descending)
-            arsort($scored_images);
-            error_log('Image scores: ' . print_r($scored_images, true));
-            
-            // Get highest scored image
-            $best_index = key($scored_images);
-            $selected_image = $images[$best_index];
-            error_log('Selected best image with index ' . $best_index . ' and score ' . $scored_images[$best_index]);
+        // If we have fewer images than requested, return all of them
+        if (count($images) <= $count) {
+            error_log('Only ' . count($images) . ' images available, returning all');
+            return $this->normalize_image_structures($images);
         }
         
-        // Debug the image structure
-        error_log('Selected image structure: ' . print_r($selected_image, true));
-        
-        // Ensure the image has the expected structure
-        if (!isset($selected_image['src'])) {
-            // If 'src' doesn't exist, check if the structure is different
-            if (isset($selected_image['photos'][0]['src'])) {
-                return $selected_image['photos'][0];
+        // Score each image based on alt text and photographer name relevance to keywords
+        $scored_images = [];
+        foreach ($images as $index => $image) {
+            $score = 0;
+            
+            // Get text to match against (alt text, photographer name, etc.)
+            $alt_text = isset($image['alt']) ? strtolower($image['alt']) : '';
+            $photographer = isset($image['photographer']) ? strtolower($image['photographer']) : '';
+            $combined_text = $alt_text . ' ' . $photographer;
+            
+            // Score based on keyword matches
+            foreach ($keywords as $keyword) {
+                $keyword = strtolower(trim($keyword));
+                if (!empty($keyword) && strpos($combined_text, $keyword) !== false) {
+                    $score += 2; // Direct match
+                }
+                
+                // Check for partial matches
+                $keyword_parts = explode(' ', $keyword);
+                foreach ($keyword_parts as $part) {
+                    if (strlen($part) > 3 && strpos($combined_text, $part) !== false) {
+                        $score += 1; // Partial match
+                    }
+                }
             }
             
-            // Create a compatible structure if needed
-            if (isset($selected_image['url'])) {
-                $selected_image['src'] = array(
-                    'original' => $selected_image['url'],
-                    'large' => $selected_image['url'],
-                    'medium' => $selected_image['url'],
-                    'small' => $selected_image['url']
-                );
+            // Prefer landscape images for blog posts
+            if (isset($image['width']) && isset($image['height']) && $image['width'] > $image['height']) {
+                $score += 1;
             }
+            
+            // Store score
+            $scored_images[$index] = $score;
         }
         
-        return $selected_image;
+        // Sort by score (descending)
+        arsort($scored_images);
+        error_log('Image scores: ' . print_r($scored_images, true));
+        
+        // Get top N images
+        $selected_images = [];
+        $i = 0;
+        foreach ($scored_images as $index => $score) {
+            if ($i >= $count) break;
+            $selected_images[] = $images[$index];
+            error_log('Selected image with index ' . $index . ' and score ' . $score);
+            $i++;
+        }
+        
+        // Normalize image structures
+        return $this->normalize_image_structures($selected_images);
+    }
+    
+    /**
+     * Normalize image structures to ensure consistent format
+     * 
+     * @param array $images Array of image data
+     * @return array Normalized image data
+     */
+    private function normalize_image_structures($images) {
+        $normalized = [];
+        
+        foreach ($images as $image) {
+            // Debug the image structure
+            error_log('Normalizing image structure: ' . print_r($image, true));
+            
+            // Ensure the image has the expected structure
+            if (!isset($image['src'])) {
+                // If 'src' doesn't exist, check if the structure is different
+                if (isset($image['photos'][0]['src'])) {
+                    $normalized[] = $image['photos'][0];
+                    continue;
+                }
+                
+                // Create a compatible structure if needed
+                if (isset($image['url'])) {
+                    $image['src'] = array(
+                        'original' => $image['url'],
+                        'large' => $image['url'],
+                        'medium' => $image['url'],
+                        'small' => $image['url']
+                    );
+                }
+            }
+            
+            $normalized[] = $image;
+        }
+        
+        return $normalized;
+    }
+    
+    /**
+     * Get the most relevant image from search results (legacy support)
+     * 
+     * @param array $images Array of image data from Pexels
+     * @param string|array $query Original search query or keywords
+     * @return array Selected image data
+     */
+    public function select_most_relevant_image($images, $query) {
+        $selected_images = $this->select_relevant_images($images, $query, 1);
+        return !empty($selected_images) ? $selected_images[0] : [];
     }
 }
