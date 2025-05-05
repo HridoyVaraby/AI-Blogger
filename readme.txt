@@ -3,9 +3,9 @@ Contributors: hridoyvaraby
 Donate link: https://varabit.com/
 Tags: ai, content generation, blog, seo, groq
 Requires at least: 5.6
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.4
+Stable tag: 1.0.5
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -36,6 +36,15 @@ It sends the blog title and context as a request to the API and receives AI-gene
 - **Data Received:** AI-generated blog post
 - **Privacy Policy:** [Groq Privacy Policy](https://console.groq.com/terms)
 - **Terms of Service:** [Groq Terms of Use](https://console.groq.com/terms)
+
+This plugin also connects to the Pexels API to fetch relevant images for blog posts.
+It sends the blog title or keywords as a search query and receives image results.
+
+- **Service Name:** Pexels API
+- **Data Sent:** Search keywords based on blog content
+- **Data Received:** Relevant images for blog posts
+- **Privacy Policy:** [Pexels Privacy Policy](https://www.pexels.com/privacy-policy/)
+- **Terms of Service:** [Pexels Terms of Service](https://www.pexels.com/terms-of-service/)
 
 == Installation ==
 

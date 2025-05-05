@@ -1,7 +1,7 @@
 # AI Blogger - WordPress Plugin
 
-![Plugin Version](https://img.shields.io/badge/Version-1.0.4-blue)
-![WordPress Tested](https://img.shields.io/badge/WordPress-6.7+-green)
+![Plugin Version](https://img.shields.io/badge/Version-1.0.5-blue)
+![WordPress Tested](https://img.shields.io/badge/WordPress-6.8+-green)
 
 **Author:** [Hridoy Varaby](https://github.com/HridoyVaraby) | [Varabit](https://varabit.com)
 
@@ -24,6 +24,7 @@ A powerful AI content generation plugin for WordPress that leverages Groq's ultr
 - PHP 8.1+
 - cURL enabled
 - Groq API key (free tier available)
+- Pexels API key (free tier available)
 
 ## Installation
 
@@ -45,11 +46,28 @@ The plugin is available on the [WordPress Plugin Repository](https://wordpress.o
 ## Configuration
 
 1. Get your Groq API key from [Groq Cloud Console](https://console.groq.com)
-2. In WordPress admin:
+2. Get your Pexels API key from [Pexels API](https://www.pexels.com/api/)
+3. In WordPress admin:
    - Go to Settings → AI Blogger
-   - Enter your API key
+   - Enter your API keys
    - Select default model and content parameters
    - Save changes
+
+## External Services
+
+### Groq API
+- **Service Name:** Groq API
+- **Data Sent:** Blog title, user prompt
+- **Data Received:** AI-generated blog post
+- **Privacy Policy:** [Groq Privacy Policy](https://console.groq.com/terms)
+- **Terms of Service:** [Groq Terms of Use](https://console.groq.com/terms)
+
+### Pexels API
+- **Service Name:** Pexels API
+- **Data Sent:** Search keywords based on blog content
+- **Data Received:** Relevant images for blog posts
+- **Privacy Policy:** [Pexels Privacy Policy](https://www.pexels.com/privacy-policy/)
+- **Terms of Service:** [Pexels Terms of Service](https://www.pexels.com/terms-of-service/)
 
 ## Available LLM Models
 
