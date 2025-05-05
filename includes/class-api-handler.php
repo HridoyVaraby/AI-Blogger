@@ -4,6 +4,18 @@ namespace AI_Blogger;
 defined('ABSPATH') || exit;
 
 class API_Handler {
+    /**
+     * Debug logging function that only logs in development environments
+     * 
+     * @param string $message The message to log
+     * @return void
+     */
+    private function log_debug($message) {
+        if (defined('WP_DEBUG') && WP_DEBUG === true) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log($message);
+        }
+    }
     const API_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
     
     public function generate_content($title, $model, $api_key) {
@@ -82,7 +94,8 @@ class API_Handler {
             $keywords_data = json_decode($keywords_json, true);
             
             if (json_last_error() === JSON_ERROR_NONE && !empty($keywords_data['keywords'])) {
-                error_log('Successfully extracted keywords: ' . print_r($keywords_data['keywords'], true));
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+                $this->log_debug('Successfully extracted keywords: ' . print_r($keywords_data['keywords'], true));
                 return $keywords_data['keywords'];
             }
         }
@@ -93,12 +106,13 @@ class API_Handler {
             $keywords_array = array_map('trim', explode(',', str_replace('"', '', $keywords_text)));
             
             if (!empty($keywords_array)) {
-                error_log('Extracted keywords using alternative method: ' . print_r($keywords_array, true));
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+                $this->log_debug('Extracted keywords using alternative method: ' . print_r($keywords_array, true));
                 return $keywords_array;
             }
         }
         
-        error_log('Failed to extract keywords from content');
+        $this->log_debug('Failed to extract keywords from content');
         return $default_keywords;
     }
 }

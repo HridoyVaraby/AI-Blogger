@@ -3,7 +3,29 @@ namespace AI_Blogger\Admin;
 
 defined('ABSPATH') || exit;
 
+/**
+ * Post Generator class for AI Blogger plugin
+ */
+
 class Post_Generator {
+    /**
+     * Debug logging function that only logs in development environments
+     * 
+     * @param mixed $message The message or data to log
+     * @param bool $is_array Whether the data is an array/object that needs to be converted
+     * @return void
+     */
+    private function log_debug($message, $is_array = false) {
+        if (defined('WP_DEBUG') && WP_DEBUG === true) {
+            if ($is_array) {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r,WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                error_log(print_r($message, true));
+            } else {
+                // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+                error_log($message);
+            }
+        }
+    }
     public function __construct() {
         add_action('admin_menu', array($this, 'add_generate_page'));
         add_action('admin_post_ai_generate_post', array($this, 'handle_generation'));
@@ -60,7 +82,7 @@ class Post_Generator {
         $model = get_option('ai_blogger_model');
 
         if (empty($api_key) || empty($model)) {
-            error_log('API key or model not configured');
+            $this->log_debug('API key or model not configured');
             $this->add_notice('error', __('API credentials not configured', 'ai-blogger'));
             wp_redirect(admin_url('edit.php?page=ai-blogger-generate'));
             exit;
@@ -78,7 +100,8 @@ class Post_Generator {
         // Extract content and keywords from the result
         $content = $result['content'];
         $keywords = !empty($result['keywords']) ? $result['keywords'] : [$title];
-        error_log('Extracted keywords for image search: ' . print_r($keywords, true));
+        $this->log_debug('Extracted keywords for image search: ', false);
+        $this->log_debug($keywords, true);
 
         $post_id = wp_insert_post(array(
             'post_title' => $title,
@@ -94,7 +117,8 @@ class Post_Generator {
         if ($post_id) {
             // Add keywords as WordPress tags
             if (!empty($keywords)) {
-                error_log('Adding keywords as WordPress tags: ' . print_r($keywords, true));
+                $this->log_debug('Adding keywords as WordPress tags: ', false);
+                $this->log_debug($keywords, true);
                 wp_set_post_tags($post_id, $keywords, false);
             }
             
@@ -102,26 +126,28 @@ class Post_Generator {
             $pexels_key = get_option('ai_blogger_pexels_key');
             
             if (empty($pexels_key)) {
-                error_log('Pexels API key is not configured');
+                $this->log_debug('Pexels API key is not configured');
                 $this->add_notice('warning', __('Post created without images - Pexels API key not configured', 'ai-blogger'));
             } else {
                 $pexels = new \AI_Blogger\Pexels_Handler($pexels_key);
                 // Pass the entire keywords array to try multiple keywords if needed
-                error_log('Attempting to search Pexels for images with keywords: ' . print_r($keywords, true));
+                $this->log_debug('Attempting to search Pexels for images with keywords: ', false);
+                $this->log_debug($keywords, true);
                 $images = $pexels->search_images($keywords, 10); // Get more images to select from
                 
                 if (is_wp_error($images)) {
-                    error_log('Pexels API error: ' . $images->get_error_message());
-                    $this->add_notice('warning', __('Post created without images - ' . $images->get_error_message(), 'ai-blogger'));
+                    $this->log_debug('Pexels API error: ' . $images->get_error_message());
+                    // translators: %s is the error message returned by the Pexels API
+                    $this->add_notice('warning', sprintf(__('Post created without images - %s', 'ai-blogger'), $images->get_error_message()));
                 } elseif (!empty($images)) {
-                    error_log('Found ' . count($images) . ' images from Pexels');
+                    $this->log_debug('Found ' . count($images) . ' images from Pexels');
                     $selected_images = $pexels->select_relevant_images($images, $keywords, 3); // Get 3 images
                     
                     if (empty($selected_images)) {
-                        error_log('No valid images selected from Pexels API');
+                        $this->log_debug('No valid images selected from Pexels API');
                         $this->add_notice('warning', __('Post created without images - No valid images selected', 'ai-blogger'));
                     } else {
-                        error_log('Selected ' . count($selected_images) . ' images from Pexels');
+                        $this->log_debug('Selected ' . count($selected_images) . ' images from Pexels');
                         
                         // Get the original content
                         $post_content = wp_kses_post($content);
@@ -140,29 +166,29 @@ class Post_Generator {
                             }
                             
                             if ($image_url) {
-                                error_log('Processing image ' . ($index + 1) . ' URL: ' . $image_url);
+                                $this->log_debug('Processing image ' . ($index + 1) . ' URL: ' . $image_url);
                                 
                                 // Create a unique title for each image
                                 $image_title = $title . ' - Image ' . ($index + 1);
                                 $attachment_id = $pexels->attach_image_to_post($image_url, $image_title);
                                 
                                 if (is_wp_error($attachment_id)) {
-                                    error_log('Image attachment error: ' . $attachment_id->get_error_message());
+                                    $this->log_debug('Image attachment error: ' . $attachment_id->get_error_message());
                                 } else {
                                     $attachment_ids[] = $attachment_id;
-                                    error_log('Successfully attached image ' . ($index + 1) . ' with ID: ' . $attachment_id);
+                                    $this->log_debug('Successfully attached image ' . ($index + 1) . ' with ID: ' . $attachment_id);
                                 }
                             }
                         }
                         
                         if (empty($attachment_ids)) {
-                            error_log('Failed to attach any images');
+                            $this->log_debug('Failed to attach any images');
                             $this->add_notice('warning', __('Post created but images could not be attached', 'ai-blogger'));
                         } else {
                             // Set the first image as featured image
                             if (!empty($attachment_ids[0])) {
                                 set_post_thumbnail($post_id, $attachment_ids[0]);
-                                error_log('Set featured image with ID: ' . $attachment_ids[0]);
+                                $this->log_debug('Set featured image with ID: ' . $attachment_ids[0]);
                             }
                             
                             // Insert images into post content at specific positions
@@ -179,7 +205,7 @@ class Post_Generator {
                                     $image_html = '<figure><img src="' . wp_get_attachment_url($attachment_ids[1]) . '" alt="' . esc_attr($title) . ' image 2"></figure>';
                                     $post_content = substr_replace($post_content, $image_html, $h2_positions[1], 0);
                                     
-                                    error_log('Successfully added images at specific positions in post content');
+                                    $this->log_debug('Successfully added images at specific positions in post content');
                                 } else {
                                     // If we don't have enough h2 tags, add images at beginning and end
                                     $image1_html = '<figure><img src="' . wp_get_attachment_url($attachment_ids[1]) . '" alt="' . esc_attr($title) . ' image 2"></figure>';
@@ -196,7 +222,7 @@ class Post_Generator {
                                         $post_content = $image1_html . $post_content . $image2_html;
                                     }
                                     
-                                    error_log('Added images at beginning and end of content due to insufficient h2 tags');
+                                    $this->log_debug('Added images at beginning and end of content due to insufficient h2 tags');
                                 }
                             } elseif (count($attachment_ids) == 2) {
                                 // If we only have 2 images, use one for featured and one in content
@@ -211,7 +237,7 @@ class Post_Generator {
                                     $post_content = $image_html . $post_content;
                                 }
                                 
-                                error_log('Added one image to post content');
+                                $this->log_debug('Added one image to post content');
                             }
                             
                             // Update the post with the new content
@@ -220,14 +246,15 @@ class Post_Generator {
                                 'post_content' => $post_content
                             ));
                             
-                            $this->add_notice('success', __('Post created with ' . count($attachment_ids) . ' images', 'ai-blogger'));
+                            // translators: %d is the number of images attached to the post
+                            $this->add_notice('success', sprintf(__('Post created with %d images', 'ai-blogger'), count($attachment_ids)));
                         }
                     }
                 } elseif (empty($images)) {
-                    error_log('No images found for query: ' . $title);
+                    $this->log_debug('No images found for query: ' . $title);
                     $this->add_notice('warning', __('Post created without images - No relevant images found', 'ai-blogger'));
                 } else {
-                    error_log('No valid image URL found in the Pexels API response');
+                    $this->log_debug('No valid image URL found in the Pexels API response');
                     $this->add_notice('warning', __('Post created without images - No valid image URL found', 'ai-blogger'));
                 }
             }

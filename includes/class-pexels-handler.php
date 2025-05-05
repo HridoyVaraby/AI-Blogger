@@ -4,6 +4,18 @@ namespace AI_Blogger;
 defined('ABSPATH') || exit;
 
 class Pexels_Handler {
+    /**
+     * Debug logging function that only logs in development environments
+     * 
+     * @param string $message The message to log
+     * @return void
+     */
+    private function log_debug($message) {
+        if (defined('WP_DEBUG') && WP_DEBUG === true) {
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+            error_log($message);
+        }
+    }
     private $api_key;
     private $base_url = 'https://api.pexels.com/v1/';
 
@@ -20,13 +32,14 @@ class Pexels_Handler {
      */
     public function search_images($query, $per_page = 5) {
         if (empty($this->api_key)) {
-            error_log('Pexels API key is empty or not configured');
+            $this->log_debug('Pexels API key is empty or not configured');
             return new \WP_Error('missing_api_key', __('Pexels API key is not configured', 'ai-blogger'));
         }
         
         // Handle array of keywords
         if (is_array($query)) {
-            error_log('Received array of keywords for image search: ' . print_r($query, true));
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+            $this->log_debug('Received array of keywords for image search: ' . print_r($query, true));
             
             // Try the first keyword (most relevant)
             if (!empty($query[0])) {
@@ -40,7 +53,7 @@ class Pexels_Handler {
                 // If no results with first keyword, try combining top keywords
                 if (count($query) >= 2) {
                     $combined_query = $query[0] . ' ' . $query[1];
-                    error_log('First keyword returned no results, trying combined keywords: ' . $combined_query);
+                    $this->log_debug('First keyword returned no results, trying combined keywords: ' . $combined_query);
                     
                     $result = $this->perform_search($combined_query, $per_page);
                     if (!is_wp_error($result) && !empty($result)) {
@@ -50,7 +63,7 @@ class Pexels_Handler {
                 
                 // Try other keywords if still no results
                 for ($i = 1; $i < min(count($query), 3); $i++) {
-                    error_log('Trying alternative keyword: ' . $query[$i]);
+                    $this->log_debug('Trying alternative keyword: ' . $query[$i]);
                     $result = $this->perform_search($query[$i], $per_page);
                     
                     if (!is_wp_error($result) && !empty($result)) {
@@ -61,7 +74,7 @@ class Pexels_Handler {
             
             // If we've tried keywords and got nothing, use the original query as a string
             $query = implode(' ', array_slice($query, 0, 3));
-            error_log('No results with individual keywords, using combined query: ' . $query);
+            $this->log_debug('No results with individual keywords, using combined query: ' . $query);
         }
         
         return $this->perform_search($query, $per_page);
@@ -76,7 +89,7 @@ class Pexels_Handler {
      */
     private function perform_search($query, $per_page = 5) {
         $url = $this->base_url . 'search?query=' . urlencode($query) . '&per_page=' . $per_page;
-        error_log('Pexels API request URL: ' . $url);
+        $this->log_debug('Pexels API request URL: ' . $url);
         
         $response = wp_remote_get($url, array(
             'headers' => array(
@@ -86,40 +99,42 @@ class Pexels_Handler {
             'sslverify' => true
         ));
         
-        error_log('Sending request to Pexels API with query: ' . $query);
+        $this->log_debug('Sending request to Pexels API with query: ' . $query);
 
         if (is_wp_error($response)) {
-            error_log('Pexels API request failed: ' . $response->get_error_message());
+            $this->log_debug('Pexels API request failed: ' . $response->get_error_message());
             return $response;
         }
 
         $status_code = wp_remote_retrieve_response_code($response);
-        error_log('Pexels API response status code: ' . $status_code);
+        $this->log_debug('Pexels API response status code: ' . $status_code);
         
         if ($status_code !== 200) {
-            error_log('Pexels API returned non-200 status code: ' . $status_code);
-            error_log('Response body: ' . wp_remote_retrieve_body($response));
-            return new \WP_Error('api_error', __('Pexels API error: HTTP ' . $status_code, 'ai-blogger'));
+            $this->log_debug('Pexels API returned non-200 status code: ' . $status_code);
+            $this->log_debug('Response body: ' . wp_remote_retrieve_body($response));
+            // translators: %d is the HTTP status code returned by the Pexels API
+            return new \WP_Error('api_error', sprintf(__('Pexels API error: HTTP %d', 'ai-blogger'), $status_code));
         }
 
         $body = wp_remote_retrieve_body($response);
-        error_log('Pexels API raw response: ' . substr($body, 0, 500) . '...');
+        $this->log_debug('Pexels API raw response: ' . substr($body, 0, 500) . '...');
         $data = json_decode($body, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            error_log('Pexels API returned invalid JSON: ' . json_last_error_msg());
+            $this->log_debug('Pexels API returned invalid JSON: ' . json_last_error_msg());
             return new \WP_Error('invalid_json', __('Invalid response from Pexels API', 'ai-blogger'));
         }
 
         // Debug the full response structure
-        error_log('Pexels API response structure: ' . print_r($data, true));
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+        $this->log_debug('Pexels API response structure: ' . print_r($data, true));
 
         if (empty($data['photos'])) {
-            error_log('Pexels API returned no photos for query: ' . $query);
+            $this->log_debug('Pexels API returned no photos for query: ' . $query);
             return new \WP_Error('no_images', __('No images found for this query', 'ai-blogger'));
         }
 
-        error_log('Pexels API returned ' . count($data['photos']) . ' photos');
+        $this->log_debug('Pexels API returned ' . count($data['photos']) . ' photos');
         return $data['photos'];
     }
 
@@ -131,32 +146,32 @@ class Pexels_Handler {
      * @return int|WP_Error Attachment ID or WP_Error on failure
      */
     public function attach_image_to_post($image_url, $title) {
-        error_log('Attempting to attach image from URL: ' . $image_url);
+        $this->log_debug('Attempting to attach image from URL: ' . $image_url);
         
         require_once(ABSPATH . 'wp-admin/includes/image.php');
         require_once(ABSPATH . 'wp-admin/includes/file.php');
         require_once(ABSPATH . 'wp-admin/includes/media.php');
 
         // Ensure the URL has a valid extension
-        $url_parts = parse_url($image_url);
+        $url_parts = wp_parse_url($image_url);
         $path_parts = pathinfo($url_parts['path']);
         
         // If no extension or invalid extension, add .jpg
         if (empty($path_parts['extension']) || !in_array(strtolower($path_parts['extension']), ['jpg', 'jpeg', 'png', 'gif'])) {
             $image_url .= (strpos($image_url, '?') === false ? '?' : '&') . 'ext=.jpg';
-            error_log('Added extension to URL: ' . $image_url);
+            $this->log_debug('Added extension to URL: ' . $image_url);
         }
 
         // Download the image
-        error_log('Downloading image from Pexels');
+        $this->log_debug('Downloading image from Pexels');
         $tmp = download_url($image_url);
         
         if (is_wp_error($tmp)) {
-            error_log('Failed to download image: ' . $tmp->get_error_message());
+            $this->log_debug('Failed to download image: ' . $tmp->get_error_message());
             return $tmp;
         }
         
-        error_log('Image downloaded successfully to temporary file: ' . $tmp);
+        $this->log_debug('Image downloaded successfully to temporary file: ' . $tmp);
 
         // Generate a proper filename with extension
         $filename = sanitize_file_name($title . '-' . time() . '.jpg');
@@ -166,18 +181,20 @@ class Pexels_Handler {
             'tmp_name' => $tmp
         );
         
-        error_log('Attaching image to media library with filename: ' . $file_array['name']);
+        $this->log_debug('Attaching image to media library with filename: ' . $file_array['name']);
 
         // Attach the image to the media library
         $attachment_id = media_handle_sideload($file_array, 0, $title);
         
         if (is_wp_error($attachment_id)) {
-            error_log('Failed to attach image: ' . $attachment_id->get_error_message());
-            @unlink($file_array['tmp_name']);
+            $this->log_debug('Failed to attach image: ' . $attachment_id->get_error_message());
+            if (file_exists($file_array['tmp_name'])) {
+                wp_delete_file($file_array['tmp_name']);
+            }
             return $attachment_id;
         }
 
-        error_log('Image successfully attached to media library with ID: ' . $attachment_id);
+        $this->log_debug('Image successfully attached to media library with ID: ' . $attachment_id);
         return $attachment_id;
     }
 
@@ -223,17 +240,18 @@ class Pexels_Handler {
     public function select_relevant_images($images, $query, $count = 3) {
         // If no images, return empty array
         if (empty($images)) {
-            error_log('No images to select from');
+            $this->log_debug('No images to select from');
             return [];
         }
         
         // Convert query to keywords array if it's a string
         $keywords = is_array($query) ? $query : [$query];
-        error_log('Selecting ' . $count . ' relevant images using keywords: ' . print_r($keywords, true));
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+        $this->log_debug('Selecting ' . $count . ' relevant images using keywords: ' . print_r($keywords, true));
         
         // If we have fewer images than requested, return all of them
         if (count($images) <= $count) {
-            error_log('Only ' . count($images) . ' images available, returning all');
+            $this->log_debug('Only ' . count($images) . ' images available, returning all');
             return $this->normalize_image_structures($images);
         }
         
@@ -274,7 +292,8 @@ class Pexels_Handler {
         
         // Sort by score (descending)
         arsort($scored_images);
-        error_log('Image scores: ' . print_r($scored_images, true));
+        // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+        $this->log_debug('Image scores: ' . print_r($scored_images, true));
         
         // Get top N images
         $selected_images = [];
@@ -282,7 +301,7 @@ class Pexels_Handler {
         foreach ($scored_images as $index => $score) {
             if ($i >= $count) break;
             $selected_images[] = $images[$index];
-            error_log('Selected image with index ' . $index . ' and score ' . $score);
+            $this->log_debug('Selected image with index ' . $index . ' and score ' . $score);
             $i++;
         }
         
@@ -301,7 +320,8 @@ class Pexels_Handler {
         
         foreach ($images as $image) {
             // Debug the image structure
-            error_log('Normalizing image structure: ' . print_r($image, true));
+            // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r
+            $this->log_debug('Normalizing image structure: ' . print_r($image, true));
             
             // Ensure the image has the expected structure
             if (!isset($image['src'])) {
