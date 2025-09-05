@@ -1,6 +1,6 @@
 # AI Blogger - WordPress Plugin
 
-![Plugin Version](https://img.shields.io/badge/Version-1.0.5-blue)
+![Plugin Version](https://img.shields.io/badge/Version-1.0.6-blue)
 ![WordPress Tested](https://img.shields.io/badge/WordPress-6.8+-green)
 
 **Author:** [Hridoy Varaby](https://github.com/HridoyVaraby) | [Varabit](https://varabit.com)
@@ -17,6 +17,7 @@ A powerful AI content generation plugin for WordPress that leverages Groq's ultr
 - One-click content generation
 - Customizable tone and style options
 - Multi-language support
+- Ability to select any model from Groq API
 
 ## Requirements
 
@@ -99,6 +100,11 @@ AI Blogger supports these state-of-the-art models:
 - [View Details & Documentation](https://github.com/HridoyVaraby/Groq-Blogger)
 
 ## Changelog
+
+### 1.0.6 - 2025-09-05
+
+- **Feature:** Added support for all models from the Groq API.
+- **Tweak:** The model selection dropdown in the settings now dynamically fetches the latest models from Groq.
 
 ### 1.0.3 - 2025-02-09
 

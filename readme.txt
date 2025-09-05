@@ -5,7 +5,7 @@ Tags: ai, content generation, blog, seo, groq
 Requires at least: 5.6
 Tested up to: 6.8
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.6
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -25,6 +25,7 @@ AI Blogger is an advanced AI-powered content generation plugin for WordPress, ut
 - One-click content generation
 - Customizable tone and style options
 - Multi-language support
+- Ability to select any model from Groq API
 
 == External services ==
 
@@ -68,3 +69,9 @@ Yes, it supports various state-of-the-art LLMs such as Mixtral-8x7b, Llama2-70b,
 2. API configuration - assets/screenshots/Screenshot2.png
 3. Post generation interface - assets/screenshots/Screenshot3.png
 4. Content preview - assets/screenshots/Screenshot4.png
+
+== Changelog ==
+
+= 1.0.6 - 2025-09-05 =
+- Feature: Added support for all models from the Groq API.
+- Tweak: The model selection dropdown in the settings now dynamically fetches the latest models from Groq.
