@@ -38,13 +38,7 @@ class Settings {
     }
 
     public function sanitize_model($input) {
-        $valid_models = [
-            'llama-3.3-70b-versatile',
-            'mixtral-8x7b-32768',
-            'deepseek-r1-distill-llama-70b',
-            'gemma2-9b-it'
-        ];
-        return in_array($input, $valid_models) ? $input : 'llama-3.3-70b-versatile';
+        return self::sanitize_model_static($input);
     }
 
     public function add_settings_page() {
@@ -74,13 +68,33 @@ class Settings {
      * @return string Sanitized input
      */
     public static function sanitize_model_static($input) {
-        $valid_models = [
-            'llama-3.3-70b-versatile',
-            'mixtral-8x7b-32768',
-            'deepseek-r1-distill-llama-70b',
-            'gemma2-9b-it'
-        ];
-        return in_array($input, $valid_models) ? $input : 'llama-3.3-70b-versatile';
+        $api_key = get_option('ai_blogger_api_key');
+        $valid_models = [];
+
+        if (!empty($api_key)) {
+            if (!class_exists('AI_Blogger\\API_Handler')) {
+                require_once AI_BLOGGER_PLUGIN_DIR . 'includes/class-api-handler.php';
+            }
+            $api_handler = new \AI_Blogger\API_Handler();
+            $valid_models = $api_handler->get_models($api_key);
+        }
+
+        // Fallback to a default list if API call fails or no API key
+        if (empty($valid_models)) {
+            $valid_models = [
+                'llama-3.3-70b-versatile',
+                'mixtral-8x7b-32768',
+                'deepseek-r1-distill-llama-70b',
+                'gemma2-9b-it',
+                'gemma-7b-it',
+                'llama3-70b-8192',
+                'llama3-8b-8192',
+            ];
+        }
+
+        $default_model = !empty($valid_models) ? $valid_models[0] : '';
+
+        return in_array($input, $valid_models) ? $input : $default_model;
     }
 
     public function register_settings() {
@@ -163,19 +177,40 @@ class Settings {
 
     public function render_model_field() {
         $selected_model = get_option('ai_blogger_model', 'llama-3.3-70b-versatile');
-        $models = array(
-            'llama-3.3-70b-versatile' => 'Llama-3.3-70b-Versatile',
-            'mixtral-8x7b-32768' => 'Mixtral-8x7b-32768',
-            'deepseek-r1-distill-llama-70b' => 'Deepseek-R1-Distill-Llama-70b (Experimental)', 
-            'gemma2-9b-it' => 'Gemma2-9b-IT',
-        );
+        $api_key = get_option('ai_blogger_api_key');
+        $models = [];
+
+        if (!empty($api_key)) {
+            if (!class_exists('AI_Blogger\\API_Handler')) {
+                require_once AI_BLOGGER_PLUGIN_DIR . 'includes/class-api-handler.php';
+            }
+            $api_handler = new \AI_Blogger\API_Handler();
+            $models = $api_handler->get_models($api_key);
+        }
+
+        // Fallback to a default list if API call fails or no API key
+        if (empty($models)) {
+            $models = [
+                'llama-3.3-70b-versatile',
+                'mixtral-8x7b-32768',
+                'deepseek-r1-distill-llama-70b',
+                'gemma2-9b-it',
+                'gemma-7b-it',
+                'llama3-70b-8192',
+                'llama3-8b-8192',
+            ];
+        }
         
         echo '<select name="ai_blogger_model" class="regular-text">';
-        foreach ($models as $value => $label) {
-            echo '<option value="' . esc_attr($value) . '" ' . selected($selected_model, $value, false) . '>' 
-                . esc_html($label) . '</option>';
+        foreach ($models as $model) {
+            echo '<option value="' . esc_attr($model) . '" ' . selected($selected_model, $model, false) . '>'
+                . esc_html($model) . '</option>';
         }
         echo '</select>';
+
+        if (empty($api_key)) {
+            echo '<p class="description">' . esc_html__('Enter a valid API key to fetch the latest models from Groq.', 'ai-blogger') . '</p>';
+        }
     }
     
     public function render_pexels_key_field() {
