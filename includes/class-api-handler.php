@@ -17,6 +17,38 @@ class API_Handler {
         }
     }
     const API_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
+    const MODELS_API_ENDPOINT = 'https://api.groq.com/openai/v1/models';
+
+    public function get_models($api_key) {
+        if (empty($api_key)) {
+            return []; // Return empty array if no API key
+        }
+
+        $response = wp_remote_get(self::MODELS_API_ENDPOINT, array(
+            'headers' => array(
+                'Authorization' => 'Bearer ' . $api_key,
+                'Content-Type' => 'application/json'
+            ),
+            'timeout' => 15
+        ));
+
+        if (is_wp_error($response) || wp_remote_retrieve_response_code($response) !== 200) {
+            return []; // Return empty array on error
+        }
+
+        $body = json_decode(wp_remote_retrieve_body($response), true);
+        $models = [];
+
+        if (isset($body['data']) && is_array($body['data'])) {
+            foreach ($body['data'] as $model) {
+                if (isset($model['id'])) {
+                    $models[] = $model['id'];
+                }
+            }
+        }
+        sort($models);
+        return $models;
+    }
     
     public function generate_content($title, $model, $api_key) {
         if (empty($api_key) || empty($model)) {
