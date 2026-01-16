@@ -3,9 +3,9 @@ Contributors: hridoyvaraby
 Donate link: https://varabit.com/
 Tags: ai, content generation, blog, seo, groq
 Requires at least: 5.6
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.4
-Stable tag: 1.0.6
+Stable tag: 1.0.7
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -71,6 +71,11 @@ Yes, it supports various state-of-the-art LLMs such as Mixtral-8x7b, Llama2-70b,
 4. Content preview - assets/screenshots/Screenshot4.png
 
 == Changelog ==
+
+= 1.0.7 - 2025-12-16 =
+- Fix: Security improvement for image URL validation.
+- Tweak: Code cleanup in admin settings.
+- Compatibility: Tested with WordPress 6.9.
 
 = 1.0.6 - 2025-09-05 =
 - Feature: Added support for all models from the Groq API.
