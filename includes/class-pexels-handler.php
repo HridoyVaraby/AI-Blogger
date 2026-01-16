@@ -146,6 +146,11 @@ class Pexels_Handler {
      * @return int|WP_Error Attachment ID or WP_Error on failure
      */
     public function attach_image_to_post($image_url, $title) {
+        if (!wp_http_validate_url($image_url)) {
+            $this->log_debug('Invalid image URL: ' . $image_url);
+            return new \WP_Error('invalid_url', __('Invalid image URL', 'ai-blogger'));
+        }
+
         $this->log_debug('Attempting to attach image from URL: ' . $image_url);
         
         require_once(ABSPATH . 'wp-admin/includes/image.php');

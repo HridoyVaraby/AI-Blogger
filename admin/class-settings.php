@@ -24,12 +24,6 @@ class Settings {
             return $options;
         }
 
-        // Verify nonce
-        $nonce = isset($_POST['_wpnonce']) ? sanitize_text_field(wp_unslash($_POST['_wpnonce'])) : '';
-        if (!wp_verify_nonce($nonce, 'ai_blogger_options-options')) {
-            return $options;
-        }
-        
         $clean_options = array();
         $clean_options['ai_blogger_api_key'] = $this->sanitize_api_key($options['ai_blogger_api_key']);
         $clean_options['ai_blogger_model'] = $this->sanitize_model($options['ai_blogger_model']);
